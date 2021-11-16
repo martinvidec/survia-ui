@@ -1,0 +1,11 @@
+
+
+
+html {
+    --material-primary-color: #039BE5;
+    --material-primary-text-color: #039BE5;
+}
+
+.survia-baseview {
+    padding: 1em;
+}
