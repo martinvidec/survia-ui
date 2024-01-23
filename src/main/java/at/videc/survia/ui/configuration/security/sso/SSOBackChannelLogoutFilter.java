@@ -166,10 +166,10 @@ public class SSOBackChannelLogoutFilter extends GenericFilterBean {
             if (principal instanceof OidcUser user) {
                 // Check if the token subject or sid matches the user's subject
                 if (tokenSid != null) {
-                    final var userSid = user.getClaimAsString(LogoutTokenClaimNames.SID);
+                    final String userSid = user.getClaimAsString(LogoutTokenClaimNames.SID);
                     return Objects.equals(tokenSid, userSid);
                 } else {
-                    final var userSub = user.getSubject();
+                    final String userSub = user.getSubject();
                     return Objects.equals(tokenSubject, userSub);
                 }
             } else {
