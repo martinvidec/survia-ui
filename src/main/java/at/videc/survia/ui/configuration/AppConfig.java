@@ -4,6 +4,7 @@ import at.videc.survia.ui.configuration.properties.AppProperties;
 import at.videc.survia.restclient.ApiClient;
 import at.videc.survia.restclient.api.DatasetEntityControllerApi;
 import at.videc.survia.restclient.api.StatusControllerApi;
+import at.videc.survia.ui.configuration.security.sso.SSOAccessTokenRefresher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -15,7 +16,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Optional;
 
 /**
  *
@@ -29,15 +33,23 @@ public class AppConfig {
 
     final OAuth2AuthorizedClientService clientService;
 
-    public AppConfig(AppProperties properties, OAuth2AuthorizedClientService clientService) {
+    final SSOAccessTokenRefresher ssoAccessTokenRefresher;
+
+    public AppConfig(
+            AppProperties properties,
+            OAuth2AuthorizedClientService clientService,
+            SSOAccessTokenRefresher ssoAccessTokenRefresher
+    ) {
         this.properties = properties;
         this.clientService = clientService;
+        this.ssoAccessTokenRefresher = ssoAccessTokenRefresher;
     }
 
     /**
      * RestTemplateBuilder has to be injected in order to be set up for tracing with OpenTelemetry
      * <br>
      * This returns a DatasetEntityControllerApi that is set up to use the correct base path and OAuth2 token
+     *
      * @param restTemplateBuilder RestTemplateBuilder
      * @return DatasetEntityControllerApi
      */
@@ -53,6 +65,7 @@ public class AppConfig {
      * RestTemplateBuilder has to be injected in order to be set up for tracing with OpenTelemetry
      * <br>
      * This returns a StatusControllerApi that is set up to use the correct base path and OAuth2 token
+     *
      * @param restTemplateBuilder RestTemplateBuilder
      * @return StatusControllerApi
      */
@@ -69,14 +82,10 @@ public class AppConfig {
 
         final OAuth2AuthorizedClientService clientServiceRef = this.clientService;
         rest.getInterceptors().add((request, body, execution) -> {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication == null) {
-                return execution.execute(request, body);
-            }
 
-            if (authentication instanceof OAuth2AuthenticationToken auth2AuthenticationToken) {
-                OAuth2AuthorizedClient authorizedClient = clientServiceRef.loadAuthorizedClient(auth2AuthenticationToken.getAuthorizedClientRegistrationId(), auth2AuthenticationToken.getName());
-                request.getHeaders().setBearerAuth(authorizedClient.getAccessToken().getTokenValue());
+            Optional<OAuth2AccessToken> accessToken = ssoAccessTokenRefresher.refreshAccessToken();
+            if (accessToken.isPresent()) {
+                request.getHeaders().setBearerAuth(accessToken.get().getTokenValue());
                 return execution.execute(request, body);
             }
 

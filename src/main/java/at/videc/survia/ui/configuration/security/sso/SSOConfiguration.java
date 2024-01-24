@@ -21,6 +21,12 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.util.Objects;
 
+/**
+ * The SSO configuration.
+ * <br/>
+ * see <a href="https://openid.net/specs/openid-connect-core-1_0.html">https://openid.net/specs/openid-connect-core-1_0.html</a>
+ *
+ */
 @EnableWebSecurity
 @Conditional(ClientsConfiguredCondition.class)
 @EnableConfigurationProperties(SSOProperties.class)
