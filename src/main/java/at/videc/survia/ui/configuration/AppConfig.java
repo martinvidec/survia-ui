@@ -35,7 +35,6 @@ public class AppConfig {
 
     public AppConfig(
             AppProperties properties,
-            OAuth2AuthorizedClientService clientService,
             SSOAccessTokenRefresher ssoAccessTokenRefresher
     ) {
         this.properties = properties;
