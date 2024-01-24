@@ -5,21 +5,14 @@ import at.videc.survia.restclient.ApiClient;
 import at.videc.survia.restclient.api.DatasetEntityControllerApi;
 import at.videc.survia.restclient.api.StatusControllerApi;
 import at.videc.survia.ui.configuration.security.sso.SSOAccessTokenRefresher;
+import at.videc.survia.ui.configuration.security.sso.SSOClientRequestInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Optional;
 
 /**
  *
@@ -31,14 +24,8 @@ public class AppConfig {
 
     private final AppProperties properties;
 
-    final SSOAccessTokenRefresher ssoAccessTokenRefresher;
-
-    public AppConfig(
-            AppProperties properties,
-            SSOAccessTokenRefresher ssoAccessTokenRefresher
-    ) {
+    public AppConfig(AppProperties properties) {
         this.properties = properties;
-        this.ssoAccessTokenRefresher = ssoAccessTokenRefresher;
     }
 
     /**
@@ -46,14 +33,16 @@ public class AppConfig {
      * <br>
      * This returns a DatasetEntityControllerApi that is set up to use the correct base path and OAuth2 token
      *
-     * @param restTemplateBuilder RestTemplateBuilder
+     * @param restTemplateBuilder         RestTemplateBuilder
+     * @param ssoClientRequestInterceptor SSOClientRequestInterceptor
      * @return DatasetEntityControllerApi
      */
     @Bean
     public DatasetEntityControllerApi datasetEntityControllerApi(
-            @Autowired RestTemplateBuilder restTemplateBuilder
+            @Autowired RestTemplateBuilder restTemplateBuilder,
+            @Autowired SSOClientRequestInterceptor ssoClientRequestInterceptor
     ) {
-        ApiClient apiClient = getApiClient(restTemplateBuilder);
+        ApiClient apiClient = getApiClient(restTemplateBuilder, ssoClientRequestInterceptor);
         return new DatasetEntityControllerApi(apiClient);
     }
 
@@ -62,30 +51,22 @@ public class AppConfig {
      * <br>
      * This returns a StatusControllerApi that is set up to use the correct base path and OAuth2 token
      *
-     * @param restTemplateBuilder RestTemplateBuilder
+     * @param restTemplateBuilder         RestTemplateBuilder
+     * @param ssoClientRequestInterceptor SSOClientRequestInterceptor
      * @return StatusControllerApi
      */
     @Bean
     public StatusControllerApi statusControllerApi(
-            @Autowired RestTemplateBuilder restTemplateBuilder
+            @Autowired RestTemplateBuilder restTemplateBuilder,
+            @Autowired SSOClientRequestInterceptor ssoClientRequestInterceptor
     ) {
-        ApiClient apiClient = getApiClient(restTemplateBuilder);
+        ApiClient apiClient = getApiClient(restTemplateBuilder, ssoClientRequestInterceptor);
         return new StatusControllerApi(apiClient);
     }
 
-    private ApiClient getApiClient(RestTemplateBuilder restTemplateBuilder) {
+    private ApiClient getApiClient(RestTemplateBuilder restTemplateBuilder, SSOClientRequestInterceptor ssoClientRequestInterceptor) {
         RestTemplate rest = restTemplateBuilder.build();
-
-        rest.getInterceptors().add((request, body, execution) -> {
-
-            Optional<OAuth2AccessToken> accessToken = ssoAccessTokenRefresher.refreshAccessToken();
-            if (accessToken.isPresent()) {
-                request.getHeaders().setBearerAuth(accessToken.get().getTokenValue());
-                return execution.execute(request, body);
-            }
-
-            return execution.execute(request, body);
-        });
+        rest.getInterceptors().add(ssoClientRequestInterceptor);
 
         ApiClient apiClient = new ApiClient(rest);
         apiClient.setBasePath(properties.getNodeUrl());
