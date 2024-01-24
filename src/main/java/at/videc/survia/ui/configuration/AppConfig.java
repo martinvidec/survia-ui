@@ -31,8 +31,6 @@ public class AppConfig {
 
     private final AppProperties properties;
 
-    final OAuth2AuthorizedClientService clientService;
-
     final SSOAccessTokenRefresher ssoAccessTokenRefresher;
 
     public AppConfig(
@@ -41,7 +39,6 @@ public class AppConfig {
             SSOAccessTokenRefresher ssoAccessTokenRefresher
     ) {
         this.properties = properties;
-        this.clientService = clientService;
         this.ssoAccessTokenRefresher = ssoAccessTokenRefresher;
     }
 
@@ -80,7 +77,6 @@ public class AppConfig {
     private ApiClient getApiClient(RestTemplateBuilder restTemplateBuilder) {
         RestTemplate rest = restTemplateBuilder.build();
 
-        final OAuth2AuthorizedClientService clientServiceRef = this.clientService;
         rest.getInterceptors().add((request, body, execution) -> {
 
             Optional<OAuth2AccessToken> accessToken = ssoAccessTokenRefresher.refreshAccessToken();
