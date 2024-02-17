@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AppProperties {
 
     private String nodeUrl;
+    private String statusUrl;
     private Long heartbeatInterval;
     private String version;
     private String apiVersion;
@@ -15,6 +16,14 @@ public class AppProperties {
 
     public String getNodeUrl() {
         return nodeUrl;
+    }
+
+    public String getStatusUrl() {
+        return statusUrl;
+    }
+
+    public void setStatusUrl(String statusUrl) {
+        this.statusUrl = statusUrl;
     }
 
     public void setNodeUrl(String nodeUrl) {

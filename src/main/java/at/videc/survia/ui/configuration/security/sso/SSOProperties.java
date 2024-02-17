@@ -39,6 +39,11 @@ public class SSOProperties {
      */
     static final int DEFAULT_MAXIMUM_SESSIONS_PER_USER = -1;
 
+    /**
+     * The default number to of seconds to skew when checking the expiration of th Access Token.
+     */
+    static final int ACCESS_TOKEN_EXPIRED_SKEW_IN_SECONDS = 10;
+
 
     /**
      * The route to redirect unauthorized requests to.
@@ -64,6 +69,8 @@ public class SSOProperties {
      * The maximum number of concurrent sessions allowed per user.
      */
     private int maximumConcurrentSessions = DEFAULT_MAXIMUM_SESSIONS_PER_USER;
+
+    private int accessTokenExpiredSkew = ACCESS_TOKEN_EXPIRED_SKEW_IN_SECONDS;
 
     /**
      * Gets the login route.
@@ -158,5 +165,13 @@ public class SSOProperties {
      */
     public void setMaximumConcurrentSessions(int maximumConcurrentSessions) {
         this.maximumConcurrentSessions = maximumConcurrentSessions;
+    }
+
+    public int getAccessTokenExpiredSkew() {
+        return accessTokenExpiredSkew;
+    }
+
+    public void setAccessTokenExpiredSkew(int accessTokenExpiredSkew) {
+        this.accessTokenExpiredSkew = accessTokenExpiredSkew;
     }
 }

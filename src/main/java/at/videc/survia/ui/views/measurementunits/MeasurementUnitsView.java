@@ -1,36 +1,46 @@
 package at.videc.survia.ui.views.measurementunits;
 
+import at.videc.survia.restclient.model.EntityModelMeasurementUnit;
+import at.videc.survia.ui.controller.ErrorHandlingController;
+import at.videc.survia.ui.controller.MeasurementUnitsController;
 import at.videc.survia.ui.views.MainLayout;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import at.videc.survia.ui.views.base.BaseEditForm;
+import at.videc.survia.ui.views.base.BaseGridView;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 import jakarta.annotation.security.RolesAllowed;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @PageTitle("Measurement Units")
 @Route(value = "measurement-units", layout = MainLayout.class)
 @RolesAllowed("USER")
-public class MeasurementUnitsView extends VerticalLayout {
+public class MeasurementUnitsView extends BaseGridView<EntityModelMeasurementUnit> {
 
-    public MeasurementUnitsView() {
-        setSpacing(false);
+    public MeasurementUnitsView(
+            MeasurementUnitsController measurementUnitsController,
+            ErrorHandlingController errorHandlingController
+    ) {
+        super(measurementUnitsController, errorHandlingController);
+    }
 
-        Image img = new Image("images/empty-plant.png", "placeholder plant");
-        img.setWidth("200px");
-        add(img);
+    @Override
+    protected EntityModelMeasurementUnit createNewEntityModel() {
+        return new EntityModelMeasurementUnit();
+    }
 
-        H2 header = new H2("This place intentionally left empty");
-        header.addClassNames(Margin.Top.XLARGE, Margin.Bottom.MEDIUM);
-        add(header);
-        add(new Paragraph("It’s a place where you can grow your own UI 🤗"));
+    @Override
+    protected BaseEditForm<EntityModelMeasurementUnit> createEntityModelForm() {
+        return new MeasurementUnitForm();
+    }
 
-        setSizeFull();
-        setJustifyContentMode(JustifyContentMode.CENTER);
-        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        getStyle().set("text-align", "center");
+    @Override
+    protected List<IColumnModel<EntityModelMeasurementUnit>> createColumnModelList() {
+        final List<IColumnModel<EntityModelMeasurementUnit>> columnModelList = new ArrayList<>();
+        columnModelList.add(createColumnModel(EntityModelMeasurementUnit::getName, "Name", "name"));
+        columnModelList.add(createColumnModel(EntityModelMeasurementUnit::getDescription, "Description"));
+        return columnModelList;
     }
 
 }

@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <revision>0.0.1-SNAPSHOT</revision>
+        <revision>0.0.2-SNAPSHOT</revision>
 
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,11 +26,11 @@
         <vaadin.line-awesome.version>2.0.0</vaadin.line-awesome.version>
 
         <!-- survia dependency versions -->
-        <survia.survia-rest-client-resttemplate.version>1.0.0</survia.survia-rest-client-resttemplate.version>
+        <survia.survia-rest-client-resttemplate.version>0.0.3</survia.survia-rest-client-resttemplate.version>
 
         <!-- survia 3rd party dependency versions -->
         <survia.spring-security-jwt.version>1.1.1.RELEASE</survia.spring-security-jwt.version>
-        <survia.gson.version>2.8.6</survia.gson.version>
+        <survia.gson.version>2.8.9</survia.gson.version>
         <survia.keycloak-core.version>22.0.5</survia.keycloak-core.version>
         <survia.jakarta.servlet-api.version>6.0.0</survia.jakarta.servlet-api.version>
     </properties>
@@ -93,15 +93,15 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <!-- database dependencies -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-data-jpa</artifactId>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.h2database</groupId>-->
+<!--            <artifactId>h2</artifactId>-->
+<!--            <scope>runtime</scope>-->
+<!--        </dependency>-->
         <!-- spring boot dependencies for OAuth2 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -122,6 +122,11 @@
             <artifactId>jakarta.servlet-api</artifactId>
             <version>${survia.jakarta.servlet-api.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>4.0.0</version>
         </dependency>
 
         <!-- vaadin dependencies -->

@@ -1,10 +1,7 @@
 package at.videc.survia.controller;
 
-import at.videc.survia.ui.configuration.properties.AppProperties;
 import at.videc.survia.restclient.api.DatasetEntityControllerApi;
-import at.videc.survia.restclient.model.DatasetRequestBody;
-import at.videc.survia.restclient.model.EntityModelDataset;
-import at.videc.survia.restclient.model.PagedModelEntityModelDataset;
+import at.videc.survia.restclient.model.*;
 import at.videc.survia.ui.controller.DatasetsController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,9 +20,6 @@ public class DatasetsControllerTest {
     private DatasetsController datasetsController;
 
     @Mock
-    private AppProperties appProperties;
-
-    @Mock
     private DatasetEntityControllerApi datasetEntityControllerApi;
 
     @BeforeEach
@@ -35,8 +29,7 @@ public class DatasetsControllerTest {
 
     @Test
     public void testCount() {
-        PagedModelEntityModelDataset pagedModel = new PagedModelEntityModelDataset();
-        pagedModel.getPage().setTotalElements(10L);
+        PagedModelEntityModelDataset pagedModel = new PagedModelEntityModelDataset().page(new PageMetadata().totalElements(10L));
 
         when(datasetEntityControllerApi.getCollectionResourceDatasetGet1(anyInt(), anyInt(), any())).thenReturn(pagedModel);
 
@@ -47,8 +40,7 @@ public class DatasetsControllerTest {
     @Test
     public void testList() {
         EntityModelDataset dataset = new EntityModelDataset();
-        PagedModelEntityModelDataset pagedModel = new PagedModelEntityModelDataset();
-        pagedModel.getEmbedded().setDatasets(Collections.singletonList(dataset));
+        PagedModelEntityModelDataset pagedModel = new PagedModelEntityModelDataset().embedded(new PagedModelEntityModelDatasetEmbedded().datasets(Collections.singletonList(dataset)));
 
         when(datasetEntityControllerApi.getCollectionResourceDatasetGet1(anyInt(), anyInt(), any())).thenReturn(pagedModel);
 
@@ -65,7 +57,7 @@ public class DatasetsControllerTest {
         dataset.setDescription("Test Description");
         dataset.setOrganization("Test Organization");
 
-        doNothing().when(datasetEntityControllerApi).putItemResourceDatasetPut(anyString(), any(DatasetRequestBody.class));
+        when(datasetEntityControllerApi.putItemResourceDatasetPut(anyString(), any(DatasetRequestBody.class))).thenReturn(dataset);
 
         datasetsController.save(dataset);
 

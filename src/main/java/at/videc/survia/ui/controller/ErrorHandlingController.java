@@ -1,9 +1,6 @@
 package at.videc.survia.ui.controller;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -20,6 +17,13 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 
+/**
+ * This class is used to handle errors.
+ * <br/>
+ * Use this class to handle errors that occur when calling the API. This class will display a dialog with the error message and the response body.
+ * <br/>
+ * Don't inject this class into other controllers. Instead, use it from inside the views.
+ */
 @Component
 public class ErrorHandlingController {
 
@@ -42,19 +46,17 @@ public class ErrorHandlingController {
         dialog.setCloseOnOutsideClick(false);
         dialog.setWidth("400");
 
-        Button confirmButton = new Button("Schliessen", event -> {
-            dialog.close();
-        });
+        Button confirmButton = new Button("Schliessen", event -> dialog.close());
         confirmButton.addThemeVariants(ButtonVariant.MATERIAL_OUTLINED);
 
         Text messageText = new Text(FEHLER_BEIM_AUFRUFEN_DER_SCHNITTSTELLE);
 
         String prettyResponseBody;
-        if(responseBody != null && !responseBody.equals("")) {
+        if(responseBody != null && !responseBody.isEmpty()) {
             try {
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                JsonParser jsonParser = new JsonParser();
-                JsonElement jsonElement = jsonParser.parse(responseBody);
+                JsonStreamParser jsonStreamParser = new JsonStreamParser(responseBody);
+                JsonElement jsonElement = jsonStreamParser.next();
                 prettyResponseBody = gson.toJson(jsonElement);
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);

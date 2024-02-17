@@ -1,10 +1,11 @@
 package at.videc.survia.ui.configuration;
 
-import at.videc.survia.ui.configuration.properties.AppProperties;
 import at.videc.survia.restclient.ApiClient;
+import at.videc.survia.restclient.api.CodedValueEntityControllerApi;
 import at.videc.survia.restclient.api.DatasetEntityControllerApi;
+import at.videc.survia.restclient.api.MeasurementUnitEntityControllerApi;
 import at.videc.survia.restclient.api.StatusControllerApi;
-import at.videc.survia.ui.configuration.security.sso.SSOAccessTokenRefresher;
+import at.videc.survia.ui.configuration.properties.AppProperties;
 import at.videc.survia.ui.configuration.security.sso.SSOClientRequestInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -42,8 +43,35 @@ public class AppConfig {
             @Autowired RestTemplateBuilder restTemplateBuilder,
             @Autowired SSOClientRequestInterceptor ssoClientRequestInterceptor
     ) {
-        ApiClient apiClient = getApiClient(restTemplateBuilder, ssoClientRequestInterceptor);
+        ApiClient apiClient = getApiClient(restTemplateBuilder, ssoClientRequestInterceptor, properties.getNodeUrl());
         return new DatasetEntityControllerApi(apiClient);
+    }
+
+    /**
+     * RestTemplateBuilder has to be injected in order to be set up for tracing with OpenTelemetry
+     * <br>
+     * This returns a MeasurementUnitEntityControllerApi that is set up to use the correct base path and OAuth2 token
+     *
+     * @param restTemplateBuilder         RestTemplateBuilder
+     * @param ssoClientRequestInterceptor SSOClientRequestInterceptor
+     * @return MeasurementUnitEntityControllerApi
+     */
+    @Bean
+    public MeasurementUnitEntityControllerApi measurementUnitsControllerApi(
+            @Autowired RestTemplateBuilder restTemplateBuilder,
+            @Autowired SSOClientRequestInterceptor ssoClientRequestInterceptor
+    ) {
+        ApiClient apiClient = getApiClient(restTemplateBuilder, ssoClientRequestInterceptor, properties.getNodeUrl());
+        return new MeasurementUnitEntityControllerApi(apiClient);
+    }
+
+    @Bean
+    public CodedValueEntityControllerApi codedValueEntityControllerApi(
+            @Autowired RestTemplateBuilder restTemplateBuilder,
+            @Autowired SSOClientRequestInterceptor ssoClientRequestInterceptor
+    ) {
+        ApiClient apiClient = getApiClient(restTemplateBuilder, ssoClientRequestInterceptor, properties.getNodeUrl());
+        return new CodedValueEntityControllerApi(apiClient);
     }
 
     /**
@@ -60,16 +88,16 @@ public class AppConfig {
             @Autowired RestTemplateBuilder restTemplateBuilder,
             @Autowired SSOClientRequestInterceptor ssoClientRequestInterceptor
     ) {
-        ApiClient apiClient = getApiClient(restTemplateBuilder, ssoClientRequestInterceptor);
+        ApiClient apiClient = getApiClient(restTemplateBuilder, ssoClientRequestInterceptor, properties.getStatusUrl());
         return new StatusControllerApi(apiClient);
     }
 
-    private ApiClient getApiClient(RestTemplateBuilder restTemplateBuilder, SSOClientRequestInterceptor ssoClientRequestInterceptor) {
+    private ApiClient getApiClient(RestTemplateBuilder restTemplateBuilder, SSOClientRequestInterceptor ssoClientRequestInterceptor, String url) {
         RestTemplate rest = restTemplateBuilder.build();
         rest.getInterceptors().add(ssoClientRequestInterceptor);
 
         ApiClient apiClient = new ApiClient(rest);
-        apiClient.setBasePath(properties.getNodeUrl());
+        apiClient.setBasePath(url);
         return apiClient;
     }
 

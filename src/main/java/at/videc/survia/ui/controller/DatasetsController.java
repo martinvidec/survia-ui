@@ -1,40 +1,40 @@
 package at.videc.survia.ui.controller;
 
-import at.videc.survia.ui.configuration.properties.AppProperties;
-import at.videc.survia.ui.controller.base.AuthenticatedApiController;
+import at.videc.survia.restclient.model.PagedModelEntityModelDatasetEmbedded;
+import at.videc.survia.ui.controller.base.BaseApiController;
 import at.videc.survia.restclient.api.DatasetEntityControllerApi;
 import at.videc.survia.restclient.model.DatasetRequestBody;
 import at.videc.survia.restclient.model.EntityModelDataset;
 import at.videc.survia.restclient.model.PagedModelEntityModelDataset;
+import at.videc.survia.ui.controller.base.IGridController;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Component
-public class DatasetsController extends AuthenticatedApiController<DatasetEntityControllerApi> {
-
-    private final AppProperties appProperties;
-
-    final DatasetEntityControllerApi api;
+public class DatasetsController extends BaseApiController<DatasetEntityControllerApi> implements IGridController<EntityModelDataset> {
 
     public DatasetsController(
-            DatasetEntityControllerApi datasetEntityControllerApi,
-            AppProperties appProperties
+            DatasetEntityControllerApi datasetEntityControllerApi
     ) {
-        this.appProperties = appProperties;
-        this.api = datasetEntityControllerApi;
+        super(datasetEntityControllerApi);
     }
 
+    @Override
     public int count(Integer page, Integer size) {
-        PagedModelEntityModelDataset pagedModelEntityModelDataset = api.getCollectionResourceDatasetGet1(page, size, null);
-        return pagedModelEntityModelDataset.getPage().getTotalElements().intValue();
+        PagedModelEntityModelDataset pagedModelEntityModelDataset = getApi().getCollectionResourceDatasetGet1(page, size, null);
+        return Optional.ofNullable(pagedModelEntityModelDataset.getPage()).map(metadata -> Optional.ofNullable(metadata.getTotalElements()).orElse(0L).intValue()).orElse(0);
     }
 
+    @Override
     public List<EntityModelDataset> list(Integer page, Integer size, List<String> sort) {
-        PagedModelEntityModelDataset pagedModelEntityModelDataset = api.getCollectionResourceDatasetGet1(page, size, sort);
-        return pagedModelEntityModelDataset.getEmbedded().getDatasets();
+        PagedModelEntityModelDataset pagedModelEntityModelDataset = getApi().getCollectionResourceDatasetGet1(page, size, sort);
+        return Optional.ofNullable(pagedModelEntityModelDataset.getEmbedded()).orElse(new PagedModelEntityModelDatasetEmbedded().datasets(Collections.emptyList())).getDatasets();
     }
 
+    @Override
     public void save(EntityModelDataset dataset) {
         DatasetRequestBody datasetRequestBody = new DatasetRequestBody();
         if (dataset.getExternalId() != null && !dataset.getExternalId().isEmpty()) {
@@ -43,20 +43,20 @@ public class DatasetsController extends AuthenticatedApiController<DatasetEntity
         datasetRequestBody.setName(dataset.getName());
         datasetRequestBody.setDescription(dataset.getDescription());
         datasetRequestBody.setOrganization(dataset.getOrganization());
+        if(dataset.getLogo() != null && dataset.getLogo().length > 0) {
+            datasetRequestBody.setLogo(dataset.getLogo());
+        }
 
         if (dataset.getExternalId() != null && !dataset.getExternalId().isEmpty()) {
-            api.putItemResourceDatasetPut(dataset.getExternalId(), datasetRequestBody);
+            getApi().putItemResourceDatasetPut(dataset.getExternalId(), datasetRequestBody);
         } else {
-            api.postCollectionResourceDatasetPost(datasetRequestBody);
+            getApi().postCollectionResourceDatasetPost(datasetRequestBody);
         }
     }
 
+    @Override
     public void delete(EntityModelDataset entityModelDataset) {
-        api.deleteItemResourceDatasetDelete(entityModelDataset.getExternalId());
+        getApi().deleteItemResourceDatasetDelete(entityModelDataset.getExternalId());
     }
 
-    @Override
-    protected DatasetEntityControllerApi getApi() {
-        return api;
-    }
 }

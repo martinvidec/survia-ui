@@ -2,17 +2,16 @@ package at.videc.survia.ui.configuration.security.sso;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.*;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.client.endpoint.OAuth2RefreshTokenGrantRequest;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -21,9 +20,13 @@ import java.util.Optional;
 @Component
 public class SSOAccessTokenRefresher {
 
+    public static final String REFRESH_TOKEN_GRANT = "refresh_token";
+
     private final OAuth2AuthorizedClientManager authorizedClientManager;
 
     private final OAuth2AuthorizedClientService clientService;
+
+    private final SSOProperties ssoProperties;
 
     /**
      * Creates a new instance of this class.
@@ -33,10 +36,12 @@ public class SSOAccessTokenRefresher {
      */
     public SSOAccessTokenRefresher(
             OAuth2AuthorizedClientManager authorizedClientManager,
-            OAuth2AuthorizedClientService clientService
+            OAuth2AuthorizedClientService clientService,
+            SSOProperties ssoProperties
     ) {
         this.authorizedClientManager = authorizedClientManager;
         this.clientService = clientService;
+        this.ssoProperties = ssoProperties;
     }
 
     /**
@@ -62,13 +67,13 @@ public class SSOAccessTokenRefresher {
             }
 
             // TODO make this configurable: seconds before expiration to refresh
-            if (authorizedClient.getAccessToken().getExpiresAt().isAfter(Instant.now().plusSeconds(10))) {
+            if (authorizedClient.getAccessToken().getExpiresAt().isAfter(Instant.now().plusSeconds(ssoProperties.getAccessTokenExpiredSkew()))) {
                 return Optional.of(authorizedClient.getAccessToken());
             }
 
             OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest.withAuthorizedClient(authorizedClient)
                     .principal(auth2AuthenticationToken)
-                    .attributes(map -> map.put(OAuth2ParameterNames.GRANT_TYPE, "refresh_token"))
+                    .attributes(map -> map.put(OAuth2ParameterNames.GRANT_TYPE, REFRESH_TOKEN_GRANT))
                     .build();
 
             OAuth2AuthorizedClient reAuthorizedClient = this.authorizedClientManager.authorize(authorizeRequest);

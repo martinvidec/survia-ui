@@ -3,6 +3,7 @@ package at.videc.survia.ui.views;
 import at.videc.survia.ui.data.User;
 import at.videc.survia.ui.configuration.security.AuthenticatedUser;
 import at.videc.survia.ui.views.admin.AdminView;
+import at.videc.survia.ui.views.codedvalues.CodedValuesView;
 import at.videc.survia.ui.views.countries.CountriesView;
 import at.videc.survia.ui.views.datasets.DatasetsView;
 import at.videc.survia.ui.views.hello.HelloView;
@@ -35,8 +36,8 @@ public class MainLayout extends AppLayout {
 
     private H2 viewTitle;
 
-    private AuthenticatedUser authenticatedUser;
-    private AccessAnnotationChecker accessChecker;
+    private final AuthenticatedUser authenticatedUser;
+    private final AccessAnnotationChecker accessChecker;
 
     public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
         this.authenticatedUser = authenticatedUser;
@@ -92,6 +93,11 @@ public class MainLayout extends AppLayout {
                     LineAwesomeIcon.RULER_COMBINED_SOLID.create()));
 
         }
+        if (accessChecker.hasAccess(CodedValuesView.class)) {
+            nav.addItem(new SideNavItem("Coded Values", CodedValuesView.class,
+                    LineAwesomeIcon.CODE_SOLID.create()));
+
+        }
         if (accessChecker.hasAccess(CountriesView.class)) {
             nav.addItem(new SideNavItem("Countries", CountriesView.class, LineAwesomeIcon.GLOBE_SOLID.create()));
 
@@ -111,7 +117,7 @@ public class MainLayout extends AppLayout {
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
 
-            Avatar avatar = new Avatar(user.getName());
+            Avatar avatar = new Avatar(user.getUsername());
             StreamResource resource = new StreamResource("profile-pic",
                     () -> new ByteArrayInputStream(user.getProfilePicture()));
             avatar.setImageResource(resource);
@@ -124,15 +130,13 @@ public class MainLayout extends AppLayout {
             MenuItem userName = userMenu.addItem("");
             Div div = new Div();
             div.add(avatar);
-            div.add(user.getName());
+            div.add(user.getUsername());
             div.add(new Icon("lumo", "dropdown"));
             div.getElement().getStyle().set("display", "flex");
             div.getElement().getStyle().set("align-items", "center");
             div.getElement().getStyle().set("gap", "var(--lumo-space-s)");
             userName.add(div);
-            userName.getSubMenu().addItem("Sign out", e -> {
-                authenticatedUser.logout();
-            });
+            userName.getSubMenu().addItem("Sign out", e -> authenticatedUser.logout());
 
             layout.add(userMenu);
         } else {
