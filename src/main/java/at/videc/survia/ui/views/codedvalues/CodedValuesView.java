@@ -12,6 +12,7 @@ import jakarta.annotation.security.RolesAllowed;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @PageTitle("Coded Values")
 @Route(value = "coded-values", layout = MainLayout.class)
@@ -33,7 +34,7 @@ public class CodedValuesView extends BaseGridView<EntityModelCodedValue> {
     @Override
     protected List<IColumnModel<EntityModelCodedValue>> createColumnModelList() {
         final List<IColumnModel<EntityModelCodedValue>> columnModelList = new ArrayList<>();
-        columnModelList.add(createColumnModel(entityModelCodedValue -> entityModelCodedValue.getCode().toString(), "Code", "code"));
+        columnModelList.add(createColumnModel(entityModelCodedValue -> Optional.ofNullable(entityModelCodedValue.getCode()).map(Object::toString).orElse("NULL"), "Code", "code"));
         columnModelList.add(createColumnModel(EntityModelCodedValue::getValue, "Value", "value"));
         return columnModelList;
     }
