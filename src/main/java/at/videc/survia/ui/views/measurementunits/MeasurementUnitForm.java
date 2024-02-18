@@ -52,7 +52,7 @@ public class MeasurementUnitForm extends BaseEditForm<EntityModelMeasurementUnit
 
     @Override
     protected EntityModelMeasurementUnit createEntityModel() {
-        return null;
+        return new EntityModelMeasurementUnit();
     }
 
 }
