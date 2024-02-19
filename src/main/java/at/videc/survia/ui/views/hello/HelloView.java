@@ -62,7 +62,7 @@ public class HelloView extends VerticalLayout {
         H2 header = new H2("Survia");
         header.addClassNames(LumoUtility.Margin.Top.XLARGE, LumoUtility.Margin.Bottom.MEDIUM);
         add(header);
-        add(new Paragraph("Open Source Intelligence (OSINT) Tool for the Surveillance of Austrian Politics"));
+        add(new Paragraph("Open Source Intelligence (OSINT) Tool for Data Collection and Analysis."));
 
         UnorderedList unorderedList = new UnorderedList();
         unorderedList.add(new ListItem("Version: " + properties.getVersion()));
